@@ -4,7 +4,7 @@ import bioscience as bs
 # 1) Load dataset 
 ###################
 # RNA-Seq (GSE60450)
-dataset = bs.load(db="/home/principalpc/git-repositories/bioscience/datasets/bibit/GSE60450.txt", index_lengths = 1, index_gene=0, naFilter=False, head = 0)
+dataset = bs.load(path="/home/principalpc/git-repositories/bioscience/datasets/bibit/GSE60450.txt", index_lengths = 1, index_gene=0, naFilter=False, head = 0)
 
 ###################
 # 2) Preprocessing
@@ -13,10 +13,12 @@ dataset = bs.load(db="/home/principalpc/git-repositories/bioscience/datasets/bib
 #bs.tpm(dataset)
 
 # DESEq2 Normalization
-bs.deseq2Norm(dataset)
+bs.cpm(dataset)
 
 # Binarize
-bs.binarize(dataset, threshold = 0.6)
+#bs.binarize(dataset, threshold = 0.6)
+
+print(dataset.data)
 
 # Handling outliers
 #bs.outliers(dataset)
@@ -28,7 +30,7 @@ bs.binarize(dataset, threshold = 0.6)
 #listModels = bs.bibit(dataset, cMnr=2, cMnc=2, mode=1, debug = True)
 
 # BiBit algorithm CPU Parallel
-listModels = bs.bibit(dataset, cMnr=2, cMnc=2, mode=2, debug = True)
+#listModels = bs.bibit(dataset, cMnr=2, cMnc=2, mode=2, debug = True)
 
 # BiBit algorithm GPU Parallel
 #listModels = bs.bibit(dataset, cMnr=2, cMnc=2, mode=3, deviceCount=1, debug = True)

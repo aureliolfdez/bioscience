@@ -78,18 +78,35 @@ def __loadSpecificFile(db, separator, skipr, naFilter, index_gene, index_lengths
     return Dataset(dataset.astype(np.double), geneNames=geneNames, columnsNames=dataColumns, lengths=lengths)
 
 def __loadNcbiDb(idGeo, key = None, fileType = "raw"):
-    client = NCBIClient(idDB = idGeo, apiKey = key)
+    
     # 1) Database connection 
-    print("Connecting NCBI database...")
-    idsByGeo = client.getIdsByGeo()
-    time.sleep(1)
+    client, idsByGeo = __connectDatabase(idGeo, key)
     if idsByGeo == None:
         print("Unable to connect to the database.")
         return None
-    
+        
     print("Database connected.")
     
     # 2) Get info database
+    infoDataset = __getInfoDatabase(client, idGeo, idsByGeo)
+    
+    # 3) Download dataset
+    __downloadDatabase(infoDataset)
+    
+    #xml_data = client.fetch_geo_data(geo_id)
+    
+    #if xml_data:
+    #    client.parse_geo_data(xml_data)
+
+def __connectDatabase(idGeo, key):
+    client = NCBIClient(idDB = idGeo, apiKey = key)
+    print("Connecting NCBI database...")
+    idsByGeo = client.getIdsByGeo()
+    time.sleep(1)
+    return client, idsByGeo
+
+def __getInfoDatabase(client, idGeo, idsByGeo):
+    
     print("Getting information from the ",idGeo," database...")
     
     summaryGeo = None
@@ -169,8 +186,9 @@ def __loadNcbiDb(idGeo, key = None, fileType = "raw"):
             aSamples = None
              
         infoDataset = NCBIDataset(accessionNumber = sAccession, title = sTitle, summary = sSummary, gpl = sGPL, gse = sGSE, taxonomy = sTaxon, gdstype = sGdsType, suppfile = sSuppFile, nSamples = sNSamples, link = sFTPLink, bioProject = sBioProject, samples = aSamples)
-        
-    # 3) Download dataset
+        return infoDataset
+
+def __downloadDatabase(infoDataset):
     if infoDataset is not None:
         parsedUrl = urlparse(infoDataset.link)
         ftpHostname = parsedUrl.hostname
@@ -183,15 +201,42 @@ def __loadNcbiDb(idGeo, key = None, fileType = "raw"):
         # Files list
         filesList = ftp.nlst()
         for file in filesList:
-            print(file)
+            
+            if file == 'matrix':
+                __downloadMatrix(ftp,file)
+            elif file == 'soft':
+                __downloadSoft(ftp,file)
+            elif file == 'suppl':
+                __downloadSuppl(ftp,file)
         
         ftp.quit()
-        
-        
-    #xml_data = client.fetch_geo_data(geo_id)
+
+def __downloadMatrix(ftp,file):
+    print("MATRIX")
+    ftp.cwd(file)
+    filesList = ftp.nlst()
+    for file in filesList:
+        if '.tar' in file or '.gz' in file or '.zip' in file:            
+            print(file)
+    ftp.cwd('..')
     
-    #if xml_data:
-    #    client.parse_geo_data(xml_data)
+def __downloadSoft(ftp,file):
+    print("SOFT")
+    ftp.cwd(file)
+    filesList = ftp.nlst()
+    for file in filesList:
+        if '.tar' in file or '.gz' in file or '.zip' in file:
+            print(file)
+    ftp.cwd('..')
+    
+def __downloadSuppl(ftp,file):
+    print("SUPPL")
+    ftp.cwd(file)
+    filesList = ftp.nlst()
+    for file in filesList:
+        if '.tar' in file or '.gz' in file or '.zip' in file:
+            print(file)
+    ftp.cwd('..')
 
 def __downloadGSE(infoDataset, fileType):
     
