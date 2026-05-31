@@ -140,7 +140,6 @@ class MicroarrayDataset(GeneDataset):
         """
         Constructor method
         """
-        # En Microarray NO usamos lengths, MIRAMOS GEN A GEN
         super().__init__(data, geneNames=geneNames, columnsNames=columnsNames, annotations=annotations, cut=cut)
         
 
@@ -168,7 +167,6 @@ class ScRNADataset(GeneDataset):
         """
         Constructor method
         """
-        # En scRNA-Seq NO usamos lengths, MIRAMOS GEN A GEN
         super().__init__(data, geneNames=geneNames, columnsNames=columnsNames, lengths=None, annotations=annotations, cut=cut)
 
 
@@ -202,7 +200,6 @@ class BulkRNASeqDataset(GeneDataset):
         """
         Constructor method
         """
-        # LENGTHS!!!!
         super().__init__(data, geneNames=geneNames, columnsNames=columnsNames, annotations=annotations, cut=cut)
         self._lengths = lengths
 
