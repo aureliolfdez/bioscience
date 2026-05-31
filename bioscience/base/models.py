@@ -2,7 +2,7 @@ import numpy as np
 import requests
 from xml.etree import ElementTree
 
-class Dataset:
+class GeneDataset:
     """
     This is a concept class representing a dataset.
     
@@ -16,10 +16,7 @@ class Dataset:
     :type geneNames: np.array, optional
     
     :param columnsNames: Array with the name of the columns involved in the dataset. If the dataset does not have the name of the columns, it shall be replaced by a set of sequential numbers.
-    :type columnsNames: np.array, optional
-    
-    :param lengths: Array with gene length value (RNA-Seq)
-    :type lengths: np.array, optional    
+    :type columnsNames: np.array, optional    
     
     :param annotations: Array that stores data from an annotation file for subsequent validation phases.
     :type annotations: np.array, optional
@@ -29,14 +26,13 @@ class Dataset:
     
     """    
     
-    def __init__(self, data, geneNames = None, columnsNames = None, lengths = None, annotations = None, cut = None):
+    def __init__(self, data, geneNames = None, columnsNames = None, annotations = None, cut = None):
         """
         Constructor method
         """
         self._original = data
         self._data = np.copy(self.original)
         self._geneNames = geneNames
-        self._lengths = lengths
         self._annotations = annotations
         self._cut = cut
         self._columnsNames = columnsNames
@@ -62,17 +58,6 @@ class Dataset:
     @geneNames.setter
     def geneNames(self, geneNames):
         self._geneNames = geneNames
-    
-    @property
-    def lengths(self):
-        """
-        Getter and setter methods of the lengths property.
-        """
-        return self._lengths
-    
-    @lengths.setter
-    def lengths(self, lengths):
-        self._lengths = lengths
     
     @property
     def annotations(self):
@@ -126,8 +111,113 @@ class Dataset:
     
     def __hash__(self):
         return 1
+    
+    
+class MicroarrayDataset(GeneDataset):
+    """
+    This is a concept class representing a microarray dataset.
+    
+    :param data: Matrix of expression values (intensities)
+    :type data: np.array
+    
+    :param geneNames: Names of genes or probes
+    :type geneNames: np.array, optional
+    
+    :param columnsNames: Names of samples
+    :type columnsNames: np.array, optional
+    
+    :param annotations: Experimental annotations (e.g. control/treatment)
+    :type annotations: np.array, optional
+    
+    :param cut: Cut-off for binarisation (optional, not commonly used)
+    :type cut: float, optional
+    
+    :param probeNames: Names of probes (if different from geneNames)
+    :type probeNames: np.array, optional
+    """
+    
+    def __init__(self, data, geneNames=None, columnsNames=None, annotations=None, cut=None, probeNames=None):
+        """
+        Constructor method
+        """
+        # En Microarray NO usamos lengths, MIRAMOS GEN A GEN
+        super().__init__(data, geneNames=geneNames, columnsNames=columnsNames, annotations=annotations, cut=cut)
+        
 
-class NetworkDataset(Dataset):
+class ScRNADataset(GeneDataset):
+    """
+    This is a concept class representing a single-cell RNA-Seq dataset.
+    
+    :param data: Matrix of gene expression counts
+    :type data: np.array
+    
+    :param geneNames: Names of genes
+    :type geneNames: np.array, optional
+    
+    :param columnsNames: Names of cells
+    :type columnsNames: np.array, optional
+    
+    :param annotations: Cell annotations (cell type, cluster, etc.)
+    :type annotations: np.array, optional
+    
+    :param cut: Cut-off for binarisation (not commonly used in scRNA-Seq)
+    :type cut: float, optional
+    """
+    
+    def __init__(self, data, geneNames=None, columnsNames=None, annotations=None, cut=None):
+        """
+        Constructor method
+        """
+        # En scRNA-Seq NO usamos lengths, MIRAMOS GEN A GEN
+        super().__init__(data, geneNames=geneNames, columnsNames=columnsNames, lengths=None, annotations=annotations, cut=cut)
+
+
+class BulkRNASeqDataset(GeneDataset):
+    """
+    This is a concept class representing a bulk RNA-Seq dataset.
+    
+    :param data: Matrix of gene expression counts
+    :type data: np.array
+    
+    :param geneNames: Names of genes
+    :type geneNames: np.array, optional
+    
+    :param columnsNames: Names of samples
+    :type columnsNames: np.array, optional
+    
+    :param lengths: Array with gene length value (RNA-Seq)
+    :type lengths: np.array, optional 
+    
+    :param lengths: Gene lengths (important for normalization)
+    :type lengths: np.array, optional
+    
+    :param annotations: Sample annotations (e.g. control vs tumor)
+    :type annotations: np.array, optional
+    
+    :param cut: Cut-off for binarisation
+    :type cut: float, optional
+    """
+    
+    def __init__(self, data, geneNames=None, columnsNames=None, lengths=None, annotations=None, cut=None):
+        """
+        Constructor method
+        """
+        # LENGTHS!!!!
+        super().__init__(data, geneNames=geneNames, columnsNames=columnsNames, annotations=annotations, cut=cut)
+        self._lengths = lengths
+
+    @property
+    def lengths(self):
+        """
+        Getter and setter methods of the lengths property.
+        """
+        return self._lengths
+    
+    @lengths.setter
+    def lengths(self, lengths):
+        self._lengths = lengths
+
+class NetworkDataset(GeneDataset):
     """
     This is a concept class representing a network dataset.
     
